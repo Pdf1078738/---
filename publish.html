@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>发布物品 - 校园易物宝</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Noto Sans SC', sans-serif; }
+        .brand-font { font-family: 'ZCOOL KuaiLe', cursive; }
+        .btn-primary { background: #4CAF50; }
+        .btn-primary:hover { background: #45a049; }
+        .text-primary { color: #4CAF50; }
+        .border-primary { border-color: #4CAF50; }
+        .upload-area { 
+            border: 2px dashed #4CAF50; 
+            transition: all 0.3s ease;
+        }
+        .upload-area:hover { 
+            border-color: #45a049; 
+            background-color: #f8f9fa;
+        }
+        .upload-area.dragover {
+            border-color: #45a049;
+            background-color: #e8f5e8;
+        }
+        .preview-image {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        .preview-image:hover {
+            transform: scale(1.05);
+        }
+        .remove-btn {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ff4444;
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .nav-bar {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(0,0,0,0.1);
+        }
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+        .category-item {
+            transition: all 0.3s ease;
+        }
+        .category-item:hover {
+            transform: translateY(-2px);
+        }
+        .category-item.selected {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .price-input {
+            position: relative;
+        }
+        .price-input::before {
+            content: '¥';
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+            font-size: 16px;
+        }
+        .form-section {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 pb-20">
+    <!-- Header -->
+    <div class="bg-white px-4 py-4 border-b border-gray-200">
+        <div class="flex items-center justify-between">
+            <button onclick="window.history.back()" class="p-2 -ml-2">
+                <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+            </button>
+            <h1 class="text-lg font-bold text-gray-800">发布物品</h1>
+            <button class="text-primary text-sm font-medium" onclick="showDrafts()">草稿</button>
+        </div>
+    </div>
+
+    <div class="px-4 py-4">
+        <!-- Image Upload Section -->
+        <div class="form-section">
+            <h3 class="text-base font-bold text-gray-800 mb-3">添加照片</h3>
+            <p class="text-sm text-gray-600 mb-4">最多可上传9张照片，第一张将作为封面</p>
+            
+            <div class="grid grid-cols-3 gap-3 mb-4" id="image-preview">
+                <!-- Preview images will be shown here -->
+            </div>
+            
+            <div class="upload-area rounded-xl p-6 text-center cursor-pointer" id="upload-area">
+                <svg class="w-12 h-12 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                <p class="text-sm text-gray-600 mb-1">点击上传或拖拽照片</p>
+                <p class="text-xs text-gray-400">支持 JPG、PNG 格式</p>
+                <input type="file" id="file-input" multiple accept="image/*" class="hidden">
+            </div>
+        </div>
+
+        <!-- Category Selection -->
+        <div class="form-section">
+            <h3 class="text-base font-bold text-gray-800 mb-3">选择分类</h3>
+            <div class="category-grid">
+                <div class="category-item text-center p-3 rounded-xl border border-gray-200 cursor-pointer" data-category="electronics">
+                    <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-1">
+                        <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                    <span class="text-xs text-gray-600">电子产品</span>
+                </div>
+                <div class="category-item text-center p-3 rounded-xl border border-gray-200 cursor-pointer" data-category="books">
+                    <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-1">
+                        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                        </svg>
+                    </div>
+                    <span class="text-xs text-gray-600">书籍教材</span>
+                </div>
+                <div class="category-item text-center p-3 rounded-xl border border-gray-200 cursor-pointer" data-category="clothing">
+                    <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-1">
+                        <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zM21 5a2 2 0 00-2-2h-4a2 2 0 00-2 2v12a4 4 0 004 4h4a2 2 0 002-2V5z"></path>
+                        </svg>
+                    </div>
+                    <span class="text-xs text-gray-600">衣物鞋帽</span>
+                </div>
+                <div class="category-item text-center p-3 rounded-xl border border-gray-200 cursor-pointer" data-category="daily">
+                    <div class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center mx-auto mb-1">
+                        <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                        </svg>
+                    </div>
+                    <span class="text-xs text-gray-600">生活用品</span>
+                </div>
+                <div class="category-item text-center p-3 rounded-xl border border-gray-200 cursor-pointer" data-category="sports">
+                    <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center mx-auto mb-1">
+                        <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                    </div>
+                    <span class="text-xs text-gray-600">运动器材</span>
+                </div>
+                <div class="category-item text-center p-3 rounded-xl border border-gray-200 cursor-pointer" data-category="bike">
+                    <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-1">
+                        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+                        </svg>
+                    </div>
+                    <span class="text-xs text-gray-600">自行车</span>
+                </div>
+                <div class="category-item text-center p-3 rounded-xl border border-gray-200 cursor-pointer" data-category="music">
+                    <div class="w-8 h-8 bg-pink-100 rounded-lg flex items-center justify-center mx-auto mb-1">
+                        <svg class="w-5 h-5 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path>
+                        </svg>
+                    </div>
+                    <span class="text-xs text-gray-600">乐器</span>
+                </div>
+                <div class="category-item text-center p-3 rounded-xl border border-gray-200 cursor-pointer" data-category="others">
+                    <div class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-1">
+                        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                        </svg>
+                    </div>
+                    <span class="text-xs text-gray-600">其他</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Item Details -->
+        <div class="form-section">
+            <h3 class="text-base font-bold text-gray-800 mb-3">物品信息</h3>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">物品标题</label>
+                    <input type="text" id="item-title" placeholder="请输入物品标题（最多30字）" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm"
+                           maxlength="30">
+                    <div class="text-xs text-gray-400 mt-1">
+                        <span id="title-count">0</span>/30
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">物品描述</label>
+                    <textarea id="item-description" placeholder="请详细描述物品的情况、使用感受等..." 
+                              rows="4" maxlength="500"
+                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm resize-none"></textarea>
+                    <div class="text-xs text-gray-400 mt-1">
+                        <span id="description-count">0</span>/500
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">新旧程度</label>
+                        <select id="item-condition" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm">
+                            <option value="">请选择</option>
+                            <option value="new">全新（未使用）</option>
+                            <option value="like-new">九成新</option>
+                            <option value="good">八成新</option>
+                            <option value="fair">七成新</option>
+                            <option value="poor">六成新及以下</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">交易方式</label>
+                        <select id="trade-method" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm">
+                            <option value="">请选择</option>
+                            <option value="face-to-face">当面交易</option>
+                            <option value="campus">校内交易</option>
+                            <option value="delivery">快递配送</option>
+                            <option value="both">均可</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pricing -->
+        <div class="form-section">
+            <h3 class="text-base font-bold text-gray-800 mb-3">价格设置</h3>
+            
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">售价</label>
+                        <div class="relative">
+                            <input type="number" id="item-price" placeholder="0.00" 
+                                   class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm">
+                            <span class="absolute left-3 top-2 text-gray-500 text-sm">¥</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">原价（可选）</label>
+                        <div class="relative">
+                            <input type="number" id="original-price" placeholder="0.00" 
+                                   class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm">
+                            <span class="absolute left-3 top-2 text-gray-500 text-sm">¥</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-blue-50 p-3 rounded-lg">
+                    <div class="flex items-center text-blue-600 text-sm">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span id="price-suggestion">价格建议：同类产品售价在 ¥50-150 之间</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Info -->
+        <div class="form-section">
+            <h3 class="text-base font-bold text-gray-800 mb-3">联系信息</h3>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">交易地点</label>
+                    <input type="text" id="trade-location" placeholder="如：图书馆门口、食堂附近等" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">联系方式</label>
+                    <div class="flex items-center space-x-3">
+                        <label class="flex items-center">
+                            <input type="checkbox" id="show-phone" class="mr-2 text-green-500">
+                            <span class="text-sm text-gray-600">显示手机号</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" id="show-wechat" class="mr-2 text-green-500">
+                            <span class="text-sm text-gray-600">显示微信号</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Publish Button -->
+        <div class="mt-6">
+            <button id="publish-btn" class="w-full btn-primary text-white py-3 rounded-xl font-medium text-base">
+                立即发布
+            </button>
+            <button class="w-full mt-3 bg-gray-100 text-gray-600 py-3 rounded-xl font-medium text-base" onclick="saveDraft()">
+                保存草稿
+            </button>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="nav-bar fixed bottom-0 left-0 right-0 px-4 py-2">
+        <div class="flex justify-around items-center">
+            <button class="flex flex-col items-center space-y-1 text-gray-400" onclick="window.location.href='index.html'">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                </svg>
+                <span class="text-xs">首页</span>
+            </button>
+            <button class="flex flex-col items-center space-y-1 text-primary">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 4v16m8-8H4"/>
+                </svg>
+                <span class="text-xs font-medium">发布</span>
+            </button>
+            <button class="flex flex-col items-center space-y-1 text-gray-400" onclick="window.location.href='messages.html'">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                </svg>
+                <span class="text-xs">消息</span>
+            </button>
+            <button class="flex flex-col items-center space-y-1 text-gray-400" onclick="window.location.href='profile.html'">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                </svg>
+                <span class="text-xs">我的</span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let selectedCategory = '';
+        let uploadedImages = [];
+
+        // File upload handling
+        const uploadArea = document.getElementById('upload-area');
+        const fileInput = document.getElementById('file-input');
+        const imagePreview = document.getElementById('image-preview');
+
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = Array.from(e.dataTransfer.files);
+            handleFiles(files);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const files = Array.from(e.target.files);
+            handleFiles(files);
+        });
+
+        function handleFiles(files) {
+            const imageFiles = files.filter(file => file.type.startsWith('image/'));
+            
+            if (uploadedImages.length + imageFiles.length > 9) {
+                alert('最多只能上传9张照片');
+                return;
+            }
+
+            imageFiles.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    uploadedImages.push({
+                        file: file,
+                        url: e.target.result,
+                        id: Date.now() + Math.random()
+                    });
+                    updateImagePreview();
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function updateImagePreview() {
+            imagePreview.innerHTML = uploadedImages.map((image, index) => `
+                <div class="preview-image">
+                    <img src="${image.url}" alt="Preview" class="w-full h-24 object-cover rounded-lg">
+                    <div class="remove-btn" onclick="removeImage(${index})">×</div>
+                    ${index === 0 ? '<div class="absolute bottom-1 left-1 bg-green-500 text-white text-xs px-1 rounded">封面</div>' : ''}
+                </div>
+            `).join('');
+
+            // Show remaining upload slots
+            const remainingSlots = 9 - uploadedImages.length;
+            if (remainingSlots > 0) {
+                uploadArea.style.display = 'block';
+            } else {
+                uploadArea.style.display = 'none';
+            }
+        }
+
+        function removeImage(index) {
+            uploadedImages.splice(index, 1);
+            updateImagePreview();
+        }
+
+        // Category selection
+        document.querySelectorAll('.category-item').forEach(item => {
+            item.addEventListener('click', function() {
+                // Remove previous selection
+                document.querySelectorAll('.category-item').forEach(i => i.classList.remove('selected'));
+                
+                // Add selection to clicked item
+                this.classList.add('selected');
+                selectedCategory = this.dataset.category;
+                
+                // Update price suggestion based on category
+                updatePriceSuggestion(selectedCategory);
+            });
+        });
+
+        function updatePriceSuggestion(category) {
+            const suggestions = {
+                'electronics': '电子产品建议售价：手机 ¥500-3000，平板 ¥800-2500，耳机 ¥100-800',
+                'books': '教材建议售价：专业课教材 ¥20-80，公共课教材 ¥10-40',
+                'clothing': '衣物建议售价：品牌服装 ¥50-200，普通衣物 ¥10-50',
+                'daily': '生活用品建议售价：小电器 ¥30-150，日用品 ¥5-30',
+                'sports': '运动器材建议售价：球类 ¥20-100，健身器材 ¥100-500',
+                'bike': '自行车建议售价：普通自行车 ¥100-300，山地车 ¥300-800',
+                'music': '乐器建议售价：吉他 ¥200-800，尤克里里 ¥80-300',
+                'others': '其他物品建议根据原价和成色合理定价'
+            };
+            
+            document.getElementById('price-suggestion').textContent = suggestions[category] || suggestions['others'];
+        }
+
+        // Text counters
+        document.getElementById('item-title').addEventListener('input', function() {
+            document.getElementById('title-count').textContent = this.value.length;
+        });
+
+        document.getElementById('item-description').addEventListener('input', function() {
+            document.getElementById('description-count').textContent = this.value.length;
+        });
+
+        // Form validation and submission
+        document.getElementById('publish-btn').addEventListener('click', function() {
+            if (validateForm()) {
+                publishItem();
+            }
+        });
+
+        function validateForm() {
+            if (uploadedImages.length === 0) {
+                alert('请至少上传一张照片');
+                return false;
+            }
+            
+            if (!selectedCategory) {
+                alert('请选择物品分类');
+                return false;
+            }
+            
+            const title = document.getElementById('item-title').value.trim();
+            if (!title) {
+                alert('请输入物品标题');
+                return false;
+            }
+            
+            const price = document.getElementById('item-price').value;
+            if (!price || price <= 0) {
+                alert('请输入合理的售价');
+                return false;
+            }
+            
+            return true;
+        }
+
+        function publishItem() {
+            // Show loading state
+            const btn = document.getElementById('publish-btn');
+            btn.textContent = '发布中...';
+            btn.disabled = true;
+            
+            // Simulate API call
+            setTimeout(() => {
+                alert('发布成功！\n您的物品已上架，可以在"我的发布"中查看');
+                window.location.href = 'index.html';
+            }, 2000);
+        }
+
+        function saveDraft() {
+            // Save form data to localStorage
+            const formData = {
+                images: uploadedImages,
+                category: selectedCategory,
+                title: document.getElementById('item-title').value,
+                description: document.getElementById('item-description').value,
+                condition: document.getElementById('item-condition').value,
+                tradeMethod: document.getElementById('trade-method').value,
+                price: document.getElementById('item-price').value,
+                originalPrice: document.getElementById('original-price').value,
+                location: document.getElementById('trade-location').value,
+                showPhone: document.getElementById('show-phone').checked,
+                showWechat: document.getElementById('show-wechat').checked
+            };
+            
+            localStorage.setItem('publishDraft', JSON.stringify(formData));
+            alert('草稿已保存');
+        }
+
+        function showDrafts() {
+            const draft = localStorage.getItem('publishDraft');
+            if (draft) {
+                const formData = JSON.parse(draft);
+                // Restore form data
+                uploadedImages = formData.images || [];
+                selectedCategory = formData.category || '';
+                document.getElementById('item-title').value = formData.title || '';
+                document.getElementById('item-description').value = formData.description || '';
+                document.getElementById('item-condition').value = formData.condition || '';
+                document.getElementById('trade-method').value = formData.tradeMethod || '';
+                document.getElementById('item-price').value = formData.price || '';
+                document.getElementById('original-price').value = formData.originalPrice || '';
+                document.getElementById('trade-location').value = formData.location || '';
+                document.getElementById('show-phone').checked = formData.showPhone || false;
+                document.getElementById('show-wechat').checked = formData.showWechat || false;
+                
+                updateImagePreview();
+                
+                // Restore category selection
+                if (selectedCategory) {
+                    document.querySelector(`[data-category="${selectedCategory}"]`).classList.add('selected');
+                }
+                
+                // Update counters
+                document.getElementById('title-count').textContent = formData.title ? formData.title.length : 0;
+                document.getElementById('description-count').textContent = formData.description ? formData.description.length : 0;
+            }
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animate form sections
+            anime({
+                targets: '.form-section',
+                translateY: [20, 0],
+                opacity: [0, 1],
+                delay: anime.stagger(100),
+                duration: 600,
+                easing: 'easeOutQuad'
+            });
+        });
+    </script>
+</body>
+</html>

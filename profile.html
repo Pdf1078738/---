@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人中心 - 校园易物宝</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Noto Sans SC', sans-serif; }
+        .brand-font { font-family: 'ZCOOL KuaiLe', cursive; }
+        .btn-primary { background: #4CAF50; }
+        .btn-primary:hover { background: #45a049; }
+        .text-primary { color: #4CAF50; }
+        .border-primary { border-color: #4CAF50; }
+        .nav-bar {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(0,0,0,0.1);
+        }
+        .profile-header {
+            background: linear-gradient(135deg, #4CAF50 0%, #2C3E50 100%);
+        }
+        .stats-card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        .stats-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .menu-item {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .menu-item:hover {
+            background: #f8f9fa;
+            transform: translateX(4px);
+        }
+        .menu-item:last-child {
+            margin-bottom: 0;
+        }
+        .achievement-badge {
+            display: inline-block;
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: bold;
+            margin-right: 4px;
+            margin-bottom: 4px;
+        }
+        .level-progress {
+            background: #e5e7eb;
+            border-radius: 10px;
+            height: 8px;
+            overflow: hidden;
+        }
+        .level-progress-bar {
+            background: linear-gradient(90deg, #4CAF50, #45a049);
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+        .tab-button {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .tab-button.active {
+            background: #4CAF50;
+            color: white;
+        }
+        .tab-button:not(.active) {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+        .tab-button:not(.active):hover {
+            background: #e5e7eb;
+        }
+        .item-card {
+            background: white;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        .item-card:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 pb-20">
+    <!-- Profile Header -->
+    <div class="profile-header text-white">
+        <div class="px-4 py-6">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center">
+                    <div class="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mr-4">
+                        <img src="https://kimi-web-img.moonshot.cn/img/img95.699pic.com/7eeeb2cb5955317d96b3e728c015121b4bf7c62d" alt="头像" class="w-14 h-14 rounded-full object-cover">
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-bold">张同学</h2>
+                        <p class="text-sm opacity-90">计算机学院 • 大三</p>
+                        <div class="flex items-center mt-1">
+                            <span class="achievement-badge">诚信用户</span>
+                            <span class="achievement-badge">交易达人</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="p-2 bg-white bg-opacity-20 rounded-full" onclick="editProfile()">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Level Progress -->
+            <div class="bg-white bg-opacity-20 rounded-xl p-3 mb-4">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-medium">Lv.5 校园达人</span>
+                    <span class="text-xs opacity-90">积分: 1,280</span>
+                </div>
+                <div class="level-progress">
+                    <div class="level-progress-bar" style="width: 65%"></div>
+                </div>
+                <div class="flex justify-between text-xs opacity-75 mt-1">
+                    <span>1,280 / 2,000</span>
+                    <span>下一级：Lv.6</span>
+                </div>
+            </div>
+            
+            <!-- Quick Stats -->
+            <div class="grid grid-cols-4 gap-3">
+                <div class="bg-white bg-opacity-20 rounded-xl p-3 text-center">
+                    <div class="text-lg font-bold">12</div>
+                    <div class="text-xs opacity-90">已发布</div>
+                </div>
+                <div class="bg-white bg-opacity-20 rounded-xl p-3 text-center">
+                    <div class="text-lg font-bold">8</div>
+                    <div class="text-xs opacity-90">已售出</div>
+                </div>
+                <div class="bg-white bg-opacity-20 rounded-xl p-3 text-center">
+                    <div class="text-lg font-bold">4</div>
+                    <div class="text-xs opacity-90">待交易</div>
+                </div>
+                <div class="bg-white bg-opacity-20 rounded-xl p-3 text-center">
+                    <div class="text-lg font-bold">¥2,580</div>
+                    <div class="text-xs opacity-90">总收入</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="px-4 py-4">
+        <!-- Main Tabs -->
+        <div class="flex space-x-2 mb-4 overflow-x-auto">
+            <button class="tab-button active" onclick="switchTab('my-items')">我的发布</button>
+            <button class="tab-button" onclick="switchTab('favorites')">收藏夹</button>
+            <button class="tab-button" onclick="switchTab('history')">交易记录</button>
+            <button class="tab-button" onclick="switchTab('analytics')">数据分析</button>
+        </div>
+
+        <!-- My Items Tab -->
+        <div id="my-items-tab" class="tab-content">
+            <div class="flex space-x-2 mb-4 overflow-x-auto">
+                <button class="tab-button active" onclick="filterItems('all')">全部</button>
+                <button class="tab-button" onclick="filterItems('selling')">在售</button>
+                <button class="tab-button" onclick="filterItems('sold')">已售</button>
+                <button class="tab-button" onclick="filterItems('draft')">草稿</button>
+            </div>
+            <div id="items-list">
+                <!-- Items will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Favorites Tab -->
+        <div id="favorites-tab" class="tab-content hidden">
+            <div id="favorites-list">
+                <!-- Favorites will be loaded here -->
+            </div>
+        </div>
+
+        <!-- History Tab -->
+        <div id="history-tab" class="tab-content hidden">
+            <div class="space-y-3">
+                <div class="stats-card">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="font-bold text-gray-800">交易统计</h3>
+                        <span class="text-sm text-gray-500">近30天</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-4 text-center">
+                        <div>
+                            <div class="text-lg font-bold text-primary">15</div>
+                            <div class="text-xs text-gray-600">交易次数</div>
+                        </div>
+                        <div>
+                            <div class="text-lg font-bold text-primary">¥1,280</div>
+                            <div class="text-xs text-gray-600">交易金额</div>
+                        </div>
+                        <div>
+                            <div class="text-lg font-bold text-primary">4.9</div>
+                            <div class="text-xs text-gray-600">平均评分</div>
+                        </div>
+                    </div>
+                </div>
+                <div id="history-list">
+                    <!-- History items will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics Tab -->
+        <div id="analytics-tab" class="tab-content hidden">
+            <div class="stats-card mb-4">
+                <h3 class="font-bold text-gray-800 mb-3">交易趋势</h3>
+                <div id="trading-chart" style="height: 200px;"></div>
+            </div>
+            <div class="stats-card mb-4">
+                <h3 class="font-bold text-gray-800 mb-3">热门分类</h3>
+                <div id="category-chart" style="height: 200px;"></div>
+            </div>
+            <div class="stats-card">
+                <h3 class="font-bold text-gray-800 mb-3">本月成就</h3>
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-600">成功交易</span>
+                        <span class="text-sm font-medium">8次</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-600">获得好评</span>
+                        <span class="text-sm font-medium">12个</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-600">新增粉丝</span>
+                        <span class="text-sm font-medium">15人</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-600">节约资源</span>
+                        <span class="text-sm font-medium">为地球贡献8kg碳减排</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Menu Items -->
+        <div class="mt-6">
+            <div class="menu-item" onclick="manageAccount()">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="font-medium text-gray-800">账号管理</div>
+                            <div class="text-sm text-gray-500">修改资料、绑定手机</div>
+                        </div>
+                    </div>
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="manageAddress()">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="font-medium text-gray-800">地址管理</div>
+                            <div class="text-sm text-gray-500">设置常用交易地点</div>
+                        </div>
+                    </div>
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="viewSettings()">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
+                            <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="font-medium text-gray-800">设置</div>
+                            <div class="text-sm text-gray-500">通知、隐私、安全</div>
+                        </div>
+                    </div>
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="showHelp()">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center mr-3">
+                            <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="font-medium text-gray-800">帮助中心</div>
+                            <div class="text-sm text-gray-500">使用指南、常见问题</div>
+                        </div>
+                    </div>
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="showAbout()">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center mr-3">
+                            <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="font-medium text-gray-800">关于我们</div>
+                            <div class="text-sm text-gray-500">版本信息、联系我们</div>
+                        </div>
+                    </div>
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="nav-bar fixed bottom-0 left-0 right-0 px-4 py-2">
+        <div class="flex justify-around items-center">
+            <button class="flex flex-col items-center space-y-1 text-gray-400" onclick="window.location.href='index.html'">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                </svg>
+                <span class="text-xs">首页</span>
+            </button>
+            <button class="flex flex-col items-center space-y-1 text-gray-400" onclick="window.location.href='publish.html'">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                <span class="text-xs">发布</span>
+            </button>
+            <button class="flex flex-col items-center space-y-1 text-gray-400" onclick="window.location.href='messages.html'">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                </svg>
+                <span class="text-xs">消息</span>
+            </button>
+            <button class="flex flex-col items-center space-y-1 text-primary">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                </svg>
+                <span class="text-xs font-medium">我的</span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Sample data
+        const myItems = [
+            { id: 1, title: 'iPad Pro 2022', price: '¥3,200', status: 'selling', image: 'https://kimi-web-img.moonshot.cn/img/mixiao3.cn/5549d20fb65b21908c7e458b817f71c38c6ee765.jpg', views: 45, likes: 12, time: '2小时前' },
+            { id: 2, title: '高等数学教材', price: '¥45', status: 'sold', image: 'https://kimi-web-img.moonshot.cn/img/picx.zhimg.com/d5aa04f28a854514c8047f6c59c63831701e8598.jpg', views: 23, likes: 8, time: '1天前' },
+            { id: 3, title: 'Nike运动鞋', price: '¥280', status: 'selling', image: 'https://kimi-web-img.moonshot.cn/img/p3.toutiaoimg.com/ecf9c28d63a19cb274d4aff482ab044a6f5e04c4', views: 67, likes: 15, time: '3天前' },
+            { id: 4, title: '宿舍小冰箱', price: '¥180', status: 'draft', image: 'https://kimi-web-img.moonshot.cn/img/univ-online.com/302c43033edcd7d454acd88200e22f9b5fef100a.jpg', views: 0, likes: 0, time: '草稿' }
+        ];
+
+        const favorites = [
+            { id: 5, title: '九成新笔记本电脑', price: '¥2,800', image: 'https://kimi-web-img.moonshot.cn/img/5b0988e595225.cdn.sohucs.com/c9591a49cc6757f3e168455ac5dd523bceb87e21.jpeg', seller: '李同学', time: '2天前' },
+            { id: 6, title: '考研英语词汇书', price: '¥25', image: 'https://kimi-web-img.moonshot.cn/img/www.315online.com/611b08fa68cbbfbc9d2050bb076f845d3be83dc6.jpg', seller: '王同学', time: '3天前' },
+            { id: 7, title: '品牌卫衣', price: '¥120', image: 'https://kimi-web-img.moonshot.cn/img/p3.toutiaoimg.com/ecf9c28d63a19cb274d4aff482ab044a6f5e04c4', seller: '陈同学', time: '5天前' }
+        ];
+
+        const history = [
+            { id: 8, title: 'iPad Pro 2022', price: '¥3,200', type: 'sell', status: 'completed', buyer: '李同学', date: '2024-01-15', rating: 5 },
+            { id: 9, title: '高等数学教材', price: '¥45', type: 'sell', status: 'completed', buyer: '王同学', date: '2024-01-14', rating: 5 },
+            { id: 10, title: '篮球', price: '¥60', type: 'buy', status: 'completed', seller: '张同学', date: '2024-01-12', rating: 4 }
+        ];
+
+        // Tab switching
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+            
+            // Show selected tab
+            document.getElementById(tabName + '-tab').classList.remove('hidden');
+            
+            // Update tab buttons
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Load tab content
+            switch(tabName) {
+                case 'my-items':
+                    loadMyItems();
+                    break;
+                case 'favorites':
+                    loadFavorites();
+                    break;
+                case 'history':
+                    loadHistory();
+                    break;
+                case 'analytics':
+                    loadAnalytics();
+                    break;
+            }
+        }
+
+        function filterItems(status) {
+            loadMyItems(status);
+            
+            // Update filter buttons
+            document.querySelectorAll('#my-items-tab .tab-button').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function loadMyItems(status = 'all') {
+            const container = document.getElementById('items-list');
+            let items = myItems;
+            
+            if (status !== 'all') {
+                items = myItems.filter(item => item.status === status);
+            }
+            
+            container.innerHTML = items.map(item => `
+                <div class="item-card">
+                    <div class="flex">
+                        <img src="${item.image}" alt="${item.title}" class="w-20 h-20 object-cover rounded-lg mr-3">
+                        <div class="flex-1">
+                            <h4 class="font-medium text-gray-800 text-sm mb-1">${item.title}</h4>
+                            <p class="text-primary font-bold text-sm mb-2">${item.price}</p>
+                            <div class="flex items-center justify-between text-xs text-gray-500 mb-2">
+                                <span>${item.views}次浏览</span>
+                                <span>${item.likes}人想要</span>
+                                <span>${item.time}</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="px-2 py-1 rounded-full text-xs ${getStatusColor(item.status)}">${getStatusText(item.status)}</span>
+                                <div class="flex space-x-2">
+                                    ${item.status === 'selling' ? `
+                                        <button class="text-xs text-blue-600" onclick="editItem(${item.id})">编辑</button>
+                                        <button class="text-xs text-red-600" onclick="deleteItem(${item.id})">删除</button>
+                                    ` : ''}
+                                    ${item.status === 'draft' ? `
+                                        <button class="text-xs text-green-600" onclick="publishDraft(${item.id})">发布</button>
+                                        <button class="text-xs text-blue-600" onclick="editItem(${item.id})">编辑</button>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function loadFavorites() {
+            const container = document.getElementById('favorites-list');
+            container.innerHTML = favorites.map(item => `
+                <div class="item-card">
+                    <div class="flex">
+                        <img src="${item.image}" alt="${item.title}" class="w-20 h-20 object-cover rounded-lg mr-3">
+                        <div class="flex-1">
+                            <h4 class="font-medium text-gray-800 text-sm mb-1">${item.title}</h4>
+                            <p class="text-primary font-bold text-sm mb-2">${item.price}</p>
+                            <div class="flex items-center justify-between text-xs text-gray-500 mb-2">
+                                <span>卖家：${item.seller}</span>
+                                <span>${item.time}</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <button class="text-xs bg-green-100 text-primary px-2 py-1 rounded-full" onclick="contactSeller(${item.id})">联系卖家</button>
+                                <button class="text-xs text-red-600" onclick="removeFavorite(${item.id})">取消收藏</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function loadHistory() {
+            const container = document.getElementById('history-list');
+            container.innerHTML = history.map(item => `
+                <div class="item-card">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm font-medium text-gray-800">${item.title}</span>
+                        <span class="text-xs text-gray-500">${item.date}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <span class="text-sm text-gray-600">${item.type === 'sell' ? '卖出' : '买入'}: ${item.price}</span>
+                            <span class="text-sm text-gray-600">${item.type === 'sell' ? '买家' : '卖家'}: ${item.type === 'sell' ? item.buyer : item.seller}</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-xs text-gray-500 mr-2">评分:</span>
+                            <div class="flex">
+                                ${Array.from({length: 5}, (_, i) => `
+                                    <svg class="w-3 h-3 ${i < item.rating ? 'text-yellow-400' : 'text-gray-300'}" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                    </svg>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function loadAnalytics() {
+            // Trading trend chart
+            const tradingChart = echarts.init(document.getElementById('trading-chart'));
+            const tradingOption = {
+                grid: { top: 20, right: 20, bottom: 20, left: 40 },
+                xAxis: {
+                    type: 'category',
+                    data: ['1月', '2月', '3月', '4月', '5月', '6月'],
+                    axisLabel: { fontSize: 10 }
+                },
+                yAxis: {
+                    type: 'value',
+                    axisLabel: { fontSize: 10 }
+                },
+                series: [{
+                    data: [2, 3, 1, 4, 2, 3],
+                    type: 'line',
+                    smooth: true,
+                    lineStyle: { color: '#4CAF50' },
+                    itemStyle: { color: '#4CAF50' },
+                    areaStyle: { color: 'rgba(76, 175, 80, 0.1)' }
+                }]
+            };
+            tradingChart.setOption(tradingOption);
+
+            // Category chart
+            const categoryChart = echarts.init(document.getElementById('category-chart'));
+            const categoryOption = {
+                grid: { top: 20, right: 20, bottom: 20, left: 20 },
+                series: [{
+                    type: 'pie',
+                    radius: ['40%', '70%'],
+                    data: [
+                        { value: 35, name: '电子产品' },
+                        { value: 25, name: '书籍教材' },
+                        { value: 20, name: '衣物鞋帽' },
+                        { value: 20, name: '其他' }
+                    ],
+                    label: { fontSize: 10 },
+                    itemStyle: {
+                        color: function(params) {
+                            const colors = ['#4CAF50', '#2196F3', '#FF9800', '#9C27B0'];
+                            return colors[params.dataIndex];
+                        }
+                    }
+                }]
+            };
+            categoryChart.setOption(categoryOption);
+        }
+
+        function getStatusColor(status) {
+            const colors = {
+                'selling': 'bg-green-100 text-green-600',
+                'sold': 'bg-gray-100 text-gray-600',
+                'draft': 'bg-yellow-100 text-yellow-600'
+            };
+            return colors[status] || 'bg-gray-100 text-gray-600';
+        }
+
+        function getStatusText(status) {
+            const texts = {
+                'selling': '在售',
+                'sold': '已售',
+                'draft': '草稿'
+            };
+            return texts[status] || '未知';
+        }
+
+        // Action functions
+        function editProfile() {
+            alert('编辑个人资料');
+        }
+
+        function editItem(id) {
+            alert('编辑物品: ' + id);
+        }
+
+        function deleteItem(id) {
+            if (confirm('确定要删除这个物品吗？')) {
+                alert('删除物品: ' + id);
+            }
+        }
+
+        function publishDraft(id) {
+            if (confirm('确定要发布这个草稿吗？')) {
+                alert('发布草稿: ' + id);
+            }
+        }
+
+        function contactSeller(id) {
+            alert('联系卖家: ' + id);
+        }
+
+        function removeFavorite(id) {
+            if (confirm('确定要取消收藏吗？')) {
+                alert('取消收藏: ' + id);
+            }
+        }
+
+        function manageAccount() {
+            alert('账号管理');
+        }
+
+        function manageAddress() {
+            alert('地址管理');
+        }
+
+        function viewSettings() {
+            alert('设置');
+        }
+
+        function showHelp() {
+            alert('帮助中心');
+        }
+
+        function showAbout() {
+            alert('关于我们\n校园易物宝 v1.0.0\n让闲置物尽其用，让校园生活更精彩');
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadMyItems();
+            
+            // Animate elements
+            anime({
+                targets: '.stats-card, .menu-item',
+                translateY: [20, 0],
+                opacity: [0, 1],
+                delay: anime.stagger(100),
+                duration: 600,
+                easing: 'easeOutQuad'
+            });
+        });
+    </script>
+</body>
+</html>
